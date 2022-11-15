@@ -1,0 +1,134 @@
+# Wardley Map
+
+```elixir
+Mix.install([:vega_lite, :kino, {:kino_vega_lite, "~> 0.1.1"}, {:jason, "~> 1.2"}])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Resolving Hex dependencies...
+Dependency resolution completed:
+New:
+  jason 1.4.0
+  kino 0.7.0
+  kino_vega_lite 0.1.6
+  table 0.1.2
+  vega_lite 0.1.6
+* Getting vega_lite (Hex package)
+* Getting kino (Hex package)
+* Getting kino_vega_lite (Hex package)
+* Getting jason (Hex package)
+* Getting table (Hex package)
+==> table
+Compiling 5 files (.ex)
+Generated table app
+==> vega_lite
+Compiling 5 files (.ex)
+Generated vega_lite app
+==> kino
+Compiling 36 files (.ex)
+Generated kino app
+==> kino_vega_lite
+Compiling 4 files (.ex)
+Generated kino_vega_lite app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+:ok
+```
+
+## Crude Starting point
+
+```elixir
+alias VegaLite, as: Vl
+
+Vl.from_json("""
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A labelled scatterplot to turn into a Wardley Map.",
+  "padding": 5,
+  "width": 400,
+  "height": 400,
+  "autosize": "pad",
+
+  "data": [
+    {
+    "name": "wardley",  
+    "values": [
+      {"Evolution": "0.5", "Visibility": 0.8, "Title": "Parent"},
+      {"Evolution": "0.5", "Visibility": 0.6, "Title": "Capture the life of my child"},
+      {"Evolution": "0.8", "Visibility": 0.5, "Title": "Photographs"},
+      {"Evolution": "0.6", "Visibility": 0.4, "Title": "Camera"},
+      {"Evolution": "0.9", "Visibility": 0.2, "Title": "Camera Tech"}
+    ]
+  }
+  ],
+
+  "scales": [
+    {
+      "name": "x",
+      "type": "linear",
+      "domain": {"data": "wardley", "field": "Evolution"},
+      "range": "width"
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {"data": "wardley", "field": "Visibility"},
+      "range": "height"
+    }
+  ],
+
+  "axes": [
+    {"orient": "left", "scale": "y", "title": "Visibility"},
+    {"orient": "bottom", "scale": "x", "title": "Evolution"}
+  ],
+
+  "marks": [
+    {
+      "name": "points",
+      "type": "symbol",
+      "from": {"data": "wardley"},
+      "encode": {
+        "enter": {
+          "x": {"scale": "x", "field": "Evolution", "minValue": 0, "maxValue": 1},
+          "y": {"scale": "y", "field": "Visibility", "minValue": 0, "maxValue": 1},
+          "size": {"value": 25},
+          "fillOpacity": {"value": 0.5}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "points"},
+      "encode": {
+        "enter": {
+          "text": {"field": "datum.Title"},
+          "fontSize": {"value": 18}
+        }
+      },
+      "transform": [
+        {
+          "type": "label",
+          "anchor": ["top", "bottom", "right", "left"],
+          "offset": [1],
+          "size": {"signal": "[width + 60, height]"}
+        }
+      ]
+    }
+  ]
+}
+""")
+```
+
+<!-- livebook:{"output":true} -->
+
+```vega-lite
+{"$schema":"https://vega.github.io/schema/vega/v5.json","autosize":"pad","axes":[{"orient":"left","scale":"y","title":"Visibility"},{"orient":"bottom","scale":"x","title":"Evolution"}],"data":[{"name":"wardley","values":[{"Evolution":"0.5","Title":"Parent","Visibility":0.8},{"Evolution":"0.5","Title":"Capture the life of my child","Visibility":0.6},{"Evolution":"0.8","Title":"Photographs","Visibility":0.5},{"Evolution":"0.6","Title":"Camera","Visibility":0.4},{"Evolution":"0.9","Title":"Camera Tech","Visibility":0.2}]}],"description":"A labelled scatterplot to turn into a Wardley Map.","height":400,"marks":[{"encode":{"enter":{"fillOpacity":{"value":0.5},"size":{"value":25},"x":{"field":"Evolution","maxValue":1,"minValue":0,"scale":"x"},"y":{"field":"Visibility","maxValue":1,"minValue":0,"scale":"y"}}},"from":{"data":"wardley"},"name":"points","type":"symbol"},{"encode":{"enter":{"fontSize":{"value":18},"text":{"field":"datum.Title"}}},"from":{"data":"points"},"transform":[{"anchor":["top","bottom","right","left"],"offset":[1],"size":{"signal":"[width + 60, height]"},"type":"label"}],"type":"text"}],"padding":5,"scales":[{"domain":{"data":"wardley","field":"Evolution"},"name":"x","range":"width","type":"linear"},{"domain":{"data":"wardley","field":"Visibility"},"name":"y","range":"height","type":"linear"}],"width":400}
+```
